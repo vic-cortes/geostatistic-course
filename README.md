@@ -1,2 +1,3 @@
 # geostatistic-course
-Repor for geostatistic course by sciData
+
+Curso de geostadística con sciData

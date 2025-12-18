@@ -95,4 +95,21 @@ plt.title(
 plt.grid(False)
 plt.show()
 
-print("Done")
+
+plt.figure(figsize=(15, 12), dpi=500)
+map_.plot(
+    column="Total",
+    scheme="Quantiles",
+    k=5,
+    legend=True,
+    cmap="YlGnBu",
+    legend_kwds={"loc": "lower left", "fmt": "{:.0f}"},
+    edgecolor="black",
+)
+plt.title(
+    "Distribución espacial de los homicidios doloso en México por quintiles\nPor entidad federativa al cierre de 2024"
+)
+plt.grid(False)
+plt.tight_layout()
+
+# plt.savefig(, dpi=500, bbox_inches="tight", facecolor="white")

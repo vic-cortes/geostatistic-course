@@ -11,6 +11,17 @@
       "env": {
         "IS_VSCODE_DEBUG": "True"
       }
+    },
+    {
+      "name": "[SESSION_2]",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/session_2.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "env": {
+        "IS_VSCODE_DEBUG": "True"
+      }
     }
   ]
 }

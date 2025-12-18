@@ -8,3 +8,4 @@ MEXICO_DIR = MAPS_DIR / "mexico"
 
 class Config:
     MEXICO_SHAPEFILE = MEXICO_DIR / "00ent.shp"
+    IDFC = DATA_DIR / "IDFC_oct2025.csv"

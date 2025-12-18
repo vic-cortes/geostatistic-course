@@ -25,7 +25,7 @@ class TypeOfCrime:
     HOMICIDIO_DOLOSO = "Homicidio doloso"
 
 
-class Columns:
+class IdfcColumns:
     SUBTYPE_OF_CRIME = "Subtipo de delito"
     YEAR = "Año"
     CLAVE_ENT = "Clave_Ent"
@@ -33,57 +33,61 @@ class Columns:
     TOTAL = "Total"
 
 
-data = pd.read_csv(Config.IDFC, encoding="cp1252")
-map_: GeoDataFrame = gpd.read_file(Config.MEXICO_SHAPEFILE)
+class MapColumns:
+    CVE_ENT = "CVE_ENT"
+    NOMGEO = "NOMGEO"
 
 
-data["Total"] = data[MONTHS].sum(axis=1)
-data.head(5)
+df = pd.read_csv(Config.IDFC, encoding="cp1252")
+mapa: GeoDataFrame = gpd.read_file(Config.MEXICO_SHAPEFILE)
+
+
+df[IdfcColumns.TOTAL] = df[MONTHS].sum(axis=1)
+df.head(5)
 
 # Filtrar por delitos de homicidio doloso
-data_filter = data.copy()
+data_filter = df.copy()
 data_filter = data_filter[
-    data_filter[Columns.SUBTYPE_OF_CRIME] == TypeOfCrime.HOMICIDIO_DOLOSO
+    data_filter[IdfcColumns.SUBTYPE_OF_CRIME] == TypeOfCrime.HOMICIDIO_DOLOSO
 ]
 data_filter.head(5)
 
 # Agrupar por año, clave de entidad y entidad, sumando el total de homicidios dolosos
 data_total_hom = data_filter.copy()
 data_total_hom = (
-    data_total_hom.groupby([Columns.YEAR, Columns.CLAVE_ENT, Columns.ENTIDAD])[
-        Columns.TOTAL
-    ]
+    data_total_hom.groupby(
+        [IdfcColumns.YEAR, IdfcColumns.CLAVE_ENT, IdfcColumns.ENTIDAD]
+    )[IdfcColumns.TOTAL]
     .sum()
     .reset_index()
 )
 data_total_hom.head(32)
 
 # Verificar columnas
-map_[["CVE_ENT", "NOMGEO"]].dtypes
-data_total_hom[[Columns.CLAVE_ENT, Columns.ENTIDAD]].dtypes
+mapa[[MapColumns.CVE_ENT, MapColumns.NOMGEO]].dtypes
+data_total_hom[[IdfcColumns.CLAVE_ENT, IdfcColumns.ENTIDAD]].dtypes
 
 # Fix data type mismatch before merge
 # Convert both columns to string type to ensure compatibility
-map_["CVE_ENT"] = map_["CVE_ENT"].astype(str)
-data_total_hom[Columns.CLAVE_ENT] = data_total_hom[Columns.CLAVE_ENT].astype(str)
+mapa[MapColumns.CVE_ENT] = mapa[MapColumns.CVE_ENT].astype(str)
+data_total_hom[IdfcColumns.CLAVE_ENT] = data_total_hom[IdfcColumns.CLAVE_ENT].astype(
+    str
+)
 
 # Filter for 2024 data
-data_2024 = data_total_hom[data_total_hom[Columns.YEAR] == 2024]
+data_2024 = data_total_hom[data_total_hom[IdfcColumns.YEAR] == 2024]
 
-map_ = map_.merge(
+mapa = mapa.merge(
     data_2024,
-    left_on=["NOMGEO"],
-    right_on=[Columns.ENTIDAD],
+    left_on=[MapColumns.NOMGEO],
+    right_on=[IdfcColumns.ENTIDAD],
     how="left",
 )
 
-
-print(map_.head())
-
 # Mapa temático con variable continua
 plt.figure(figsize=(15, 12), dpi=500)
-map_.plot(
-    column="Total",
+mapa.plot(
+    column=IdfcColumns.TOTAL,
     legend=True,
     cmap="OrRd",
     legend_kwds={"label": "Escala Continua", "orientation": "horizontal"},
@@ -97,8 +101,8 @@ plt.show()
 
 
 plt.figure(figsize=(15, 12), dpi=500)
-map_.plot(
-    column="Total",
+mapa.plot(
+    column=IdfcColumns.TOTAL,
     scheme="Quantiles",
     k=5,
     legend=True,

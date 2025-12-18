@@ -72,10 +72,27 @@ data_2024 = data_total_hom[data_total_hom[Columns.YEAR] == 2024]
 
 map_ = map_.merge(
     data_2024,
-    left_on=["CVE_ENT", "NOMGEO"],
-    right_on=[Columns.CLAVE_ENT, Columns.ENTIDAD],
+    left_on=["NOMGEO"],
+    right_on=[Columns.ENTIDAD],
     how="left",
 )
 
 
 print(map_.head())
+
+# Mapa temático con variable continua
+plt.figure(figsize=(15, 12), dpi=500)
+map_.plot(
+    column="Total",
+    legend=True,
+    cmap="OrRd",
+    legend_kwds={"label": "Escala Continua", "orientation": "horizontal"},
+    edgecolor="black",
+)
+plt.title(
+    "Distribución espacial de los homicidios doloso en México\nPor entidad federativa al cierre de 2024"
+)
+plt.grid(False)
+plt.show()
+
+print("Done")

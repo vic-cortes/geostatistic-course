@@ -20,6 +20,9 @@ MONTHS = [
     "Diciembre",
 ]
 
+# Dataset source:
+# https://drive.google.com/file/d/16oRu_xGKwuGoqwmKmz7A8mcVNFwb4Vt5/view
+
 
 class TypeOfCrime:
     HOMICIDIO_DOLOSO = "Homicidio doloso"
@@ -117,3 +120,55 @@ plt.grid(False)
 plt.tight_layout()
 
 # plt.savefig(, dpi=500, bbox_inches="tight", facecolor="white")
+
+
+def create_map_by_crime(
+    df: pd.DataFrame,
+    mapa: GeoDataFrame,
+    year: int = 2024,
+    type_of_crime: TypeOfCrime | None = None,
+) -> GeoDataFrame:
+    """
+    Crea un mapa temático de México basado en los datos de homicidios dolosos.
+    """
+    if type_of_crime is None:
+        raise ValueError("type_of_crime no puede ser None")
+
+    if not (2015 <= year <= 2024):
+        raise ValueError("year debe estar entre 2015 y 2024")
+
+    df_filtered = df.copy()
+    df_filtered = df_filtered[
+        df_filtered[IdfcColumns.SUBTYPE_OF_CRIME] == type_of_crime
+    ]
+
+    # Agrupar por año, clave de entidad y entidad, sumando el total de crimen
+    GROUP_BY_COLUMNS = [
+        IdfcColumns.YEAR,
+        IdfcColumns.CLAVE_ENT,
+        IdfcColumns.ENTIDAD,
+    ]
+
+    df_total_crime = df_filtered.copy()
+    df_total_crime = (
+        df_total_crime.groupby(GROUP_BY_COLUMNS)[IdfcColumns.TOTAL].sum().reset_index()
+    )
+
+    # Fix data type mismatch before merge
+    # Convert both columns to string type to ensure compatibility
+    mapa[MapColumns.CVE_ENT] = mapa[MapColumns.CVE_ENT].astype(str)
+    df_total_crime[IdfcColumns.CLAVE_ENT] = df_total_crime[
+        IdfcColumns.CLAVE_ENT
+    ].astype(str)
+
+    # Filter by year
+    df_by_year = df_total_crime[df_total_crime[IdfcColumns.YEAR] == year]
+
+    mapa = mapa.merge(
+        df_by_year,
+        left_on=[MapColumns.NOMGEO],
+        right_on=[IdfcColumns.ENTIDAD],
+        how="left",
+    )
+
+    return mapa

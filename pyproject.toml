@@ -14,4 +14,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ipykernel>=7.1.0",
+    "jupyter-black>=0.4.0",
 ]

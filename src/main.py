@@ -228,6 +228,7 @@ mapa.plot(ax=ax, color="white", edgecolor="black", linewidth=0.6)
 class MapColors:
     SALMON = "#FF6467"
     BLACK = "black"
+    GRAY = "#525252"
 
 
 plot_params = {
@@ -255,37 +256,40 @@ handles = [
     for lab, size in zip(labels, [20, 40, 60, 80, 100])
 ]
 ax.legend(handles=handles, title="Magnitud", loc="lower left", frameon=True)
+
+base_params = {
+    "x": 0.4,
+    "y": 0.95,
+    "fontweight": "bold",
+    "color": MapColors.GRAY,
+    "ha": "center",
+    "fontsize": 14,
+}
+
+plt.figtext(s="Sismos registrados del 2000 al 2025", **base_params)  # Titulo
 plt.figtext(
-    0.4,
-    0.95,
-    "Sismos registrados del 2000 al 2025",
-    fontweight="bold",
-    color="#525252",
-    ha="center",
-    fontsize=14,
-)  # Titulo
-plt.figtext(
-    0.4,
-    0.87,
-    "maginitudes 5.5 en adelante\nepicentros menores a 200 km",
-    style="italic",
-    color="#525252",
-    ha="center",
+    y=0.87,
+    s="maginitudes 5.5 en adelante\nepicentros menores a 200 km",
     fontsize=12,
+    **base_params,
 )  # Subtitulo
 plt.figtext(
-    0.05, 0.05, "Fuente: SMN. Catálogo de sismos.", color="#525252", fontsize=10
+    0.05,
+    0.05,
+    "Fuente: SMN. Catálogo de sismos.",
+    color=MapColors.GRAY,
+    fontsize=10,
 )  # Pie de gráfico
 ax.set_axis_off()
 ax = plt.gca()
-leg = ax.get_legend()
+legend = ax.get_legend()
 
-for text in leg.get_texts():
-    text.set_color("#525252")
+for text in legend.get_texts():
+    text.set_color(MapColors.GRAY)
 
-if leg is not None:
-    leg.get_frame().set_linewidth(0)
-    leg.get_frame().set_edgecolor("none")
+if legend is not None:
+    legend.get_frame().set_linewidth(0)
+    legend.get_frame().set_edgecolor("none")
 
 plt.grid(False)
 plt.tight_layout(rect=[0, 0.05, 0.85, 0.95])

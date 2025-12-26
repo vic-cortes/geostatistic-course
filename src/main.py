@@ -172,3 +172,120 @@ def create_map_by_crime(
     )
 
     return mapa
+
+
+# Try reading with error handling and explicit parameters
+sismos_df = pd.read_csv(
+    Config.SISMO_DATA,
+    skiprows=4,
+    encoding="latin1",
+)
+
+sismos_df = sismos_df.dropna(subset=["Hora"])
+sismos_df["Magnitud"] = pd.to_numeric(sismos_df["Magnitud"], errors="coerce")
+
+
+# Convertir el df a GeoDataFrame
+geometry = gpd.points_from_xy(sismos_df["Longitud"], sismos_df["Latitud"])
+sismos_gdf = gpd.GeoDataFrame(sismos_df, geometry=geometry, crs="4326")
+
+
+# Extraer la referencia de los kms
+KMS_REGEX = r"(\d+(?:\.\d+)?)\s*km"
+COLUMN_REF_KMS = "Referencia de localizacion"
+
+sismos_gdf["km_epicentro"] = (
+    sismos_df[COLUMN_REF_KMS].str.extract(KMS_REGEX)[0].astype(float)
+)
+
+# Sismos de magnitud 5.5 en adelante y menores a 200 kms de epicentro
+sismos_gdf_ct = sismos_gdf[
+    (sismos_gdf["Magnitud"] >= 5.5) & (sismos_gdf["km_epicentro"] <= 200)
+].copy()
+
+qt = sismos_gdf_ct["Magnitud"].quantile([0, 0.2, 0.4, 0.6, 0.8, 1]).values
+# 2. Crear variable categórica
+sismos_gdf_ct["Magnitud_qt"] = pd.cut(
+    sismos_gdf_ct["Magnitud"], bins=qt, include_lowest=True
+)
+# 3. Generaer etiquetas
+labels = [f"{qt[i]:.1f} - {qt[i+1]:.1f}" for i in range(5)]
+
+# 4. Tamaños de puntos por quintil
+size_map = dict(zip(sismos_gdf_ct["Magnitud_qt"].cat.categories, [20, 40, 60, 80, 100]))
+sismos_gdf_ct["size"] = sismos_gdf_ct["Magnitud_qt"].map(size_map)
+sismos_gdf_ct = sismos_gdf_ct.to_crs(mapa.crs)
+
+
+import numpy as np
+from matplotlib.lines import Line2D
+
+fig, ax = plt.subplots(figsize=(10, 5), dpi=500)
+# Capa de la cartografía por división política (estatal)
+mapa.plot(ax=ax, color="white", edgecolor="black", linewidth=0.6)
+
+
+class MapColors:
+    SALMON = "#FF6467"
+    BLACK = "black"
+
+
+plot_params = {
+    "ax": ax,
+    "markersize": sismos_gdf_ct["size"],
+    "color": MapColors.SALMON,
+    "edgecolor": MapColors.BLACK,
+    "linewidth": 0.5,
+    "alpha": 0.85,
+}
+
+
+# Capa de sismos
+sismos_gdf_ct.plot(**plot_params)
+handles = [
+    Line2D(
+        xdata=[0],
+        ydata=[0],
+        marker="o",
+        color=MapColors.SALMON,
+        label=lab,
+        markersize=np.sqrt(size),
+        linestyle="None",
+    )
+    for lab, size in zip(labels, [20, 40, 60, 80, 100])
+]
+ax.legend(handles=handles, title="Magnitud", loc="lower left", frameon=True)
+plt.figtext(
+    0.4,
+    0.95,
+    "Sismos registrados del 2000 al 2025",
+    fontweight="bold",
+    color="#525252",
+    ha="center",
+    fontsize=14,
+)  # Titulo
+plt.figtext(
+    0.4,
+    0.87,
+    "maginitudes 5.5 en adelante\nepicentros menores a 200 km",
+    style="italic",
+    color="#525252",
+    ha="center",
+    fontsize=12,
+)  # Subtitulo
+plt.figtext(
+    0.05, 0.05, "Fuente: SMN. Catálogo de sismos.", color="#525252", fontsize=10
+)  # Pie de gráfico
+ax.set_axis_off()
+ax = plt.gca()
+leg = ax.get_legend()
+
+for text in leg.get_texts():
+    text.set_color("#525252")
+
+if leg is not None:
+    leg.get_frame().set_linewidth(0)
+    leg.get_frame().set_edgecolor("none")
+
+plt.grid(False)
+plt.tight_layout(rect=[0, 0.05, 0.85, 0.95])

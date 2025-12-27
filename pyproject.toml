@@ -9,6 +9,7 @@ dependencies = [
     "mapclassify>=2.10.0",
     "matplotlib>=3.10.8",
     "polars>=1.36.1",
+    "pysal>=25.7",
 ]
 
 [dependency-groups]

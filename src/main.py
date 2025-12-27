@@ -293,3 +293,115 @@ if legend is not None:
 
 plt.grid(False)
 plt.tight_layout(rect=[0, 0.05, 0.85, 0.95])
+
+
+# Session 7
+
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from libpysal.weights import Queen, Rook
+from shapely.geometry import LineString
+
+# Cálculo de matriz
+#! NOTA: Se asigna a W mayuscula ya que representa la matriz de pesos espaciales
+#! (ya se que no es pythonico :/)
+W = Queen.from_dataframe(mapa, ids="CVE_ENT")
+
+# Normalizar filas
+W.transform = "r"
+W.neighbors
+
+
+# Visualizar contigūidad entre vecinos
+
+## Vecinos de Aguascalientes (CVE_ENT = 1)
+
+print("Vecinos de la unidad 1 (0):")
+print(W.neighbors["01"])
+
+print("Vecinos de la unidad:")
+print(W.neighbors["13"])
+
+
+# Visualizar pesos entre vecinos
+
+## Vecinos de aguascalientes (CVE_ENT = 1)
+
+print("Vecinos de la unidad 1:")
+print(W.weights["01"])
+
+print("Vecinos de la unidad:")
+print(W.weights["13"])
+
+# Matriz completa
+
+W_dense, ids = W.full()
+
+print("Dimensión de W:", W_dense.shape)
+W_dense
+
+W_sparse = W.sparse
+
+print(W_sparse)
+
+# Diagnóstico rápido
+
+print("Número de observaciones:", W.n)
+print("Islas (sin vecinos):", W.islands)
+print("Componentes conectados:", W.n_components)
+
+
+# Re calcular la matriz sin ids
+
+W_queen = Queen.from_dataframe(Mapa)
+
+# Normalizar filas
+
+W_queen.transform = "r"
+
+## Visualización del mapa
+
+fig, ax = plt.subplots(1, 1, figsize=(10, 5), dpi=500)
+# Poligonos
+mapa.plot(ax=ax, color="white", edgecolor="black")
+
+# Conexiones reina
+W_queen.plot(
+    mapa,
+    edge_kws=dict(linewidth=1, color="red"),
+    node_kws=dict(marker="*"),
+    ax=ax,
+)
+plt.figtext(
+    0.4,
+    0.95,
+    "Mapa de pesos espaciales de México\npor entidad federativa",
+    fontweight="bold",
+    color="#525252",
+    ha="center",
+    fontsize=14,
+)  # Titulo
+plt.figtext(
+    0.4,
+    0.87,
+    "Método: Contigüedad - Reina",
+    style="italic",
+    color="#525252",
+    ha="center",
+    fontsize=12,
+)  # Subtitulo
+plt.figtext(
+    0.05,
+    0.05,
+    "Fuente: Elaborado por SciData con datos de INEGI.",
+    color="#525252",
+    fontsize=10,
+)  # Pie de gráfico
+ax.set_axis_off()
+ax = plt.gca()
+plt.grid(False)
+plt.tight_layout(rect=[0, 0.05, 0.85, 0.95])
+# ruta_guardado = "/content/drive/MyDrive/SciData/GEOAES_25/Salidas/Vecinos_Queen.png"
+# plt.savefig(ruta_guardado, dpi=500, bbox_inches="tight", facecolor="white")

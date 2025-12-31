@@ -405,3 +405,6 @@ plt.grid(False)
 plt.tight_layout(rect=[0, 0.05, 0.85, 0.95])
 # ruta_guardado = "/content/drive/MyDrive/SciData/GEOAES_25/Salidas/Vecinos_Queen.png"
 # plt.savefig(ruta_guardado, dpi=500, bbox_inches="tight", facecolor="white")
+
+
+# Sesion 8

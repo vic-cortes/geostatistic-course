@@ -61,6 +61,46 @@ class WeightsMethods:
         # Polygons
         self.map_.plot(ax=ax, color=MapColors.WHITE, edgecolor=MapColors.BLACK)
 
+    def _plot_title(self, title: str) -> None:
+        """
+        Agrega el título y subtítulo al mapa.
+        """
+        plt.figtext(
+            0.4,
+            0.95,
+            title,
+            fontweight="bold",
+            color=MapColors.GRAY,
+            ha="center",
+            fontsize=14,
+        )
+
+    def _plot_subtitle(self, subtitle: str) -> None:
+        plt.figtext(
+            0.4,
+            0.87,
+            subtitle,
+            style="italic",
+            color=MapColors.GRAY,
+            ha="center",
+            fontsize=12,
+        )
+
+    def _plot_footer(self) -> None:
+        """
+        Agrega el pie de gráfico al mapa.
+        """
+        text_title = "Fuente: Elaborado por SciData con datos de INEGI."
+        font_size = 10
+
+        plt.figtext(
+            0.0,
+            0.05,
+            text_title,
+            color=MapColors.GRAY,
+            fontsize=font_size,
+        )
+
     def visualize_map(self) -> None:
         pass
 

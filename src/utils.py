@@ -1,6 +1,4 @@
 import geopandas as gpd
-import matplotlib.pyplot as plt
-import pandas as pd
 from geopandas.geodataframe import GeoDataFrame
 
 from config import Config
@@ -27,3 +25,10 @@ def create_map_dataframe() -> GeoDataFrame:
     """
     mapa: GeoDataFrame = gpd.read_file(Config.MEXICO_SHAPEFILE)
     return mapa
+
+
+class MapColors:
+    SALMON = "#FF6467"
+    BLACK = "black"
+    WHITE = "white"
+    GRAY = "#525252"

@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from enum import StrEnum
+
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,6 +13,56 @@ from utils import MapColors, create_map_dataframe
 mapa = create_map_dataframe()
 
 NORMALIZE_BY_ROWS = "r"
+
+
+class SupportedWeightsMethods(StrEnum):
+    QUEEN = "queen"
+    ROOK = "rook"
+    KNN = "knn"
+    DISTANCE_BAND = "distance_band"
+
+
+@dataclass
+class WeightsMethods:
+    map_: gpd.GeoDataFrame
+    type_of_method: SupportedWeightsMethods
+
+    def method_selector(self) -> None:
+        if self.type_of_method == SupportedWeightsMethods.QUEEN:
+            return Queen
+        elif self.type_of_method == SupportedWeightsMethods.ROOK:
+            return Rook
+        elif self.type_of_method == SupportedWeightsMethods.KNN:
+            return KNN
+        elif self.type_of_method == SupportedWeightsMethods.DISTANCE_BAND:
+            return DistanceBand
+        else:
+            raise ValueError("Método no soportado")
+
+    def get_matrix(self, by_ids: bool = True):
+        _klass = self.method_selector()
+
+        if not by_ids:
+            return _klass.from_dataframe(self.map_)
+
+        return _klass.from_dataframe(self.map_, ids="CVE_ENT")
+
+    def process_matrix(self, by_ids: bool = True):
+        W = self.get_matrix(by_ids=by_ids)
+        W.transform = NORMALIZE_BY_ROWS
+        return W
+
+    def _base_map(self) -> None:
+        """
+        Crea la visualización base del mapa.
+        """
+        _, ax = plt.subplots(1, 1, figsize=(10, 5), dpi=500)
+
+        # Polygons
+        self.map_.plot(ax=ax, color=MapColors.WHITE, edgecolor=MapColors.BLACK)
+
+    def visualize_map(self) -> None:
+        pass
 
 
 # Cálculo de matriz
@@ -36,7 +89,7 @@ W_rook = Rook.from_dataframe(mapa)
 
 # Normalizar filas
 
-W_rook.transform = "r"
+W_rook.transform = NORMALIZE_BY_ROWS
 
 ## Visualización del mapa
 
